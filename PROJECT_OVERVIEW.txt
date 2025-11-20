@@ -1,0 +1,491 @@
+================================================================================
+                    HEALTHCARE AI SYMPTOM CHECKER
+                         PROJECT OVERVIEW & TECH STACK
+================================================================================
+
+PROJECT PURPOSE
+===============
+A free, web-based health information tool that helps users understand their 
+symptoms by providing educational health information based on reported symptoms, 
+patient profile data, and medical history. NOT a diagnosis tool—purely for 
+awareness and general guidance.
+
+Key Features:
+- Symptom analysis with confidence scoring
+- Patient profile management (age, weight, height, sex)
+- Personalized safety recommendations
+- 13 common health conditions database
+- 6-section structured medical information output
+- Rate limiting & security hardening
+- Real-time chat interface
+
+
+TECHNOLOGY STACK
+================
+
+1. FRONTEND FRAMEWORK: Next.js 16.0.3 (React 19)
+   ──────────────────────────────────────────────
+   What: Next.js is a modern React framework that provides both server-side and 
+         client-side rendering with built-in API routes, making it ideal for 
+         full-stack web applications.
+   
+   Why:  - Production-ready, fast, and scalable
+         - Built-in TypeScript support
+         - File-based routing (pages in /src/app automatically become routes)
+         - Turbopack for fast builds and hot reloading
+         - Easy deployment
+         - Includes API endpoints (no separate backend needed for MVP)
+   
+   How it works:
+         - App starts at localhost:3000
+         - Pages (page.tsx files) render automatically
+         - API routes (route.ts files) handle requests
+         - React components (ChatDisplay, SymptomForm, etc.) handle UI
+
+
+2. UI STYLING: Tailwind CSS 4.x
+   ──────────────────────────────
+   What: Utility-first CSS framework that lets you style without writing CSS files.
+   
+   Why:  - Fast development (blue labels, light backgrounds applied with class names)
+         - Responsive design (works on mobile, tablet, desktop)
+         - Easy to maintain and update
+         - Built-in dark mode support (optional)
+         - Small bundle size
+   
+   How it works:
+         - Each component uses className="..." with predefined Tailwind classes
+         - Example: className="bg-blue-100 text-black" = light blue bg + black text
+         - No separate CSS files needed
+
+
+3. LANGUAGE: TypeScript
+   ─────────────────────
+   What: JavaScript with type checking. You declare what type of data each 
+         variable should be (string, number, object, etc.).
+   
+   Why:  - Catches errors before runtime (e.g., passing wrong data type)
+         - Better IDE autocomplete and documentation
+         - Easier to refactor large codebases
+         - Professional standard for production apps
+   
+   How it works:
+         - Variables typed: const age: number = 30
+         - Functions typed: function analyze(symptoms: string): AnalysisResult
+         - Build step converts TypeScript to JavaScript before deployment
+
+
+4. STATE MANAGEMENT: React Hooks (useState, useContext, useEffect)
+   ───────────────────────────────────────────────────────────────
+   What: Built-in React functions to manage component state and lifecycle.
+   
+   Why:  - No external library needed (simpler, smaller bundle)
+         - Sufficient for MVP-scale app
+         - Easy to learn and debug
+   
+   How it works:
+         - useState: stores data (e.g., const [messages, setMessages] = useState([]))
+         - useEffect: runs code on page load or when data changes
+         - useContext: shares data across components without prop drilling
+
+
+5. DATA PERSISTENCE: Browser localStorage
+   ──────────────────────────────────────
+   What: Browser's built-in key-value storage (5-10MB per domain).
+   
+   Why:  - No database needed for MVP
+         - Conversations persist even after browser close/refresh
+         - Works offline
+         - Free, no external service
+   
+   How it works:
+         - Conversations saved as JSON string in localStorage
+         - Each user's data stored by unique ID
+         - On page load, app retrieves and displays previous chats
+
+
+BACKEND / API
+=============
+
+1. API ENDPOINT: /api/analyze (Next.js Route Handler)
+   ──────────────────────────────────────────────────
+   What: REST endpoint that receives symptom data and returns medical analysis.
+   
+   Location: /src/app/api/analyze/route.ts
+   
+   Why:  - Single responsibility (just validation & routing)
+         - Security layer (auth, sanitization, rate limiting)
+         - Can be scaled/replaced later
+   
+   How it works:
+         1. Client sends POST request with:
+            - symptoms (string)
+            - additionalInfo (string)
+            - otherRelevantInfo (string) ← NEW FIELD
+            - patientProfile (age, sex, weight, height)
+            - x-user-id header (auth token)
+         
+         2. Server validates:
+            - User ID is present and valid
+            - Not rate-limited (max 10 requests/minute per user)
+            - Input is sanitized (no XSS attacks)
+            - All fields are correct type
+         
+         3. Server calls analyzer: analyzeSymptoms(symptoms, additionalInfo, otherRelevantInfo, patientProfile)
+         
+         4. Analyzer returns:
+            - analysis (6-section text)
+            - confidence (0-100 score)
+            - conditions (array of 13 conditions with percentages)
+         
+         5. Server returns JSON response to client
+
+
+2. HEALTH ANALYZER: /src/lib/healthcareApi.ts
+   ────────────────────────────────────────────
+   What: Core logic that matches symptoms to conditions and generates 
+         personalized medical information.
+   
+   Why:  - Encapsulates complex medical logic
+         - Reusable across API and frontend
+         - Easy to test and update
+   
+   How it works:
+         
+         Step 1: KEYWORD MATCHING
+         - Converts user input to lowercase
+         - Compares against 13 condition keyword lists
+         - Example: input "fever" matches Flu, COVID-19, Strep Throat
+         
+         Step 2: SYMPTOM SCORING
+         - Each condition has a baseScore (0.15 - 0.30)
+         - Adds +0.12 for each matched keyword
+         - Bonus +0.08 if 2+ symptoms matched
+         - Bonus +0.10 if "fever" + "temperature" mentioned
+         - Cap at 95% confidence
+         
+         Step 3: INCORPORATE OTHER RELEVANT INFO
+         - Merges additionalInfo + otherRelevantInfo for enhanced matching
+         - Detects chronic indicators (week/month mentioned → boost Asthma/Allergies)
+         - Boosts confidence if detailed info provided (+0.05 to +0.97)
+         
+         Step 4: GENERATE TAILORED OUTPUT
+         - Detects which symptoms were matched (fever, cough, nausea, etc.)
+         - Generates relevant "Possible Causes" paragraphs
+         - Builds symptom-specific self-care advice
+         - Prioritizes top 4-5 emergency warnings
+         
+         Step 5: PATIENT SAFETY CHECK
+         - Analyzes profile: age, BMI, sex
+         - Adds safety notes (e.g., "Age <2: seek pediatric advice")
+         - Assigns safety tag: "Likely safe" / "Use caution" / "Check doctor" / "Not safe"
+         
+         Step 6: BUILD 6-SECTION RESPONSE
+         1. Problem Summary (what was reported + BMI + safety tag)
+         2. Possible Causes (tailored causes based on matched symptoms)
+         3. Self-Care Advice (general + symptom-specific tips)
+         4. Warning Signs (top 4-5 critical emergency symptoms)
+         5. Prevention Tips (lifestyle & hygiene recommendations)
+         6. Follow-Up Questions (prompts for better future accuracy)
+
+
+SECURITY LAYER
+==============
+
+Location: /src/app/api/analyze/route.ts
+
+1. AUTHENTICATION (x-user-id header)
+   - Required header, must be non-empty string ≤ 100 chars
+   - Returns 401 if missing or invalid
+   
+2. INPUT SANITIZATION
+   - Limits symptom length to 500 chars (prevents huge payloads)
+   - Limits additionalInfo to 500 chars
+   - Limits otherRelevantInfo to 1000 chars (NEW)
+   - Trims whitespace (prevents empty-string bypass)
+   
+3. INPUT VALIDATION
+   - Checks JSON is valid (try-catch on parse)
+   - Verifies body is object type
+   - Validates patientProfile fields:
+     * age: number, 0-150
+     * sex: string, "male" | "female" | "other"
+     * weightKg: number, 0-500
+     * heightCm: number, 50-250
+   - Returns 400 if validation fails
+   
+4. RATE LIMITING
+   - In-memory Map tracks requests per user ID
+   - Max 10 requests/minute per user
+   - Counter resets after 60 seconds
+   - Returns 429 if exceeded
+   
+5. ERROR MASKING
+   - Never expose internal error details to client
+   - Generic 500 error message
+   - Logs detailed errors server-side only
+
+
+FRONTEND COMPONENTS
+===================
+
+1. /src/app/chat/page.tsx (Main Chat Page)
+   ────────────────────────────────────────
+   What: Chat interface where users enter symptoms and see analysis.
+   
+   Responsibilities:
+   - Render symptom form & patient profile form
+   - Display chat messages
+   - Handle "Show more conditions" expansion
+   - Persist chat history to localStorage
+   - Send requests to /api/analyze
+
+
+2. /src/components/SymptomForm.tsx
+   ───────────────────────────────
+   What: Form for entering symptoms, temperature, duration.
+   
+   Features:
+   - 15+ pre-defined symptom buttons (Respiratory, General, Digestive)
+   - Temperature input (35-42°C validation)
+   - Duration input
+   - Quick-add buttons for common symptoms
+
+
+3. /src/components/PatientDetailsForm.tsx
+   ──────────────────────────────────────
+   What: Form for patient profile (age, sex, weight, height).
+   
+   Features:
+   - Age: 0-150 years
+   - Sex: male, female, other
+   - Weight: kg (0-300)
+   - Height: cm (50-250)
+   - Real-time validation with error messages
+
+
+4. /src/components/ChatDisplay.tsx
+   ────────────────────────────────
+   What: Renders chat messages with analysis, conditions, warnings.
+   
+   Features:
+   - Displays 6-section analysis text
+   - Shows confidence score (colored badge: Low/Medium/High)
+   - "Show more conditions" button (expands from 3 to 13 conditions)
+   - Condition details:
+     * Transmission method
+     * Recovery time
+     * Precautions (bulleted list)
+     * Emergency warnings (red box)
+
+
+5. /src/components/FormInput.tsx
+   ──────────────────────────────
+   What: Reusable text input component with validation.
+   
+   Features:
+   - Styled with blue labels, black text, light blue background
+   - Error message display
+   - Type checking (text, number, email, etc.)
+
+
+6. /src/lib/authContext.tsx
+   ─────────────────────────
+   What: React context for managing user authentication & session.
+   
+   Features:
+   - Generates unique user ID on first visit
+   - Stores in localStorage
+   - Passes to all API requests as x-user-id header
+
+
+PROJECT STRUCTURE
+=================
+
+chatbot_saved_20251116_221507/
+├── src/
+│   ├── app/
+│   │   ├── globals.css          (global Tailwind styles)
+│   │   ├── layout.tsx           (root layout, auth provider)
+│   │   ├── page.tsx             (home page)
+│   │   ├── chat/
+│   │   │   └── page.tsx         (chat interface)
+│   │   ├── login/
+│   │   │   └── page.tsx         (future: login page)
+│   │   ├── terms/
+│   │   │   └── page.tsx         (future: terms of service)
+│   │   └── api/
+│   │       └── analyze/
+│   │           └── route.ts     (symptom analysis endpoint)
+│   ├── components/              (React components)
+│   │   ├── ChatDisplay.tsx
+│   │   ├── FormInput.tsx
+│   │   ├── PatientDetailsForm.tsx
+│   │   └── SymptomForm.tsx
+│   └── lib/                     (utilities & logic)
+│       ├── authContext.tsx      (user auth)
+│       └── healthcareApi.ts     (analyzer logic)
+├── public/                      (static assets)
+├── package.json                 (dependencies)
+├── tsconfig.json                (TypeScript config)
+├── next.config.ts               (Next.js config)
+├── tailwind.config.mjs           (Tailwind config)
+└── postcss.config.mjs            (CSS processing)
+
+
+HOW IT ALL WORKS TOGETHER
+==========================
+
+1. USER OPENS APP
+   → Visits http://localhost:3000
+   → Next.js loads React components
+   → AuthContext generates unique user ID (stored in browser)
+   → Chat page renders with forms (SymptomForm, PatientDetailsForm)
+
+2. USER ENTERS DATA
+   → Fills in symptoms, temperature, patient info (age, weight, etc.)
+   → Clicks "Generate" button
+
+3. FRONTEND SENDS REQUEST
+   → JavaScript sends POST to /api/analyze
+   → Payload includes:
+     * symptoms
+     * additionalInfo (optional)
+     * otherRelevantInfo (optional) ← NEW
+     * patientProfile
+     * x-user-id header (auto-added by authContext)
+
+4. BACKEND VALIDATES & PROCESSES
+   → /api/analyze/route.ts receives request
+   → Validates auth, rate limit, input types, ranges
+   → Calls analyzeSymptoms() in healthcareApi.ts
+   → Analyzer:
+     - Matches keywords to conditions
+     - Scores based on symptom overlap
+     - Incorporates patient profile for safety checks
+     - Generates tailored 6-section response
+     - Returns { analysis, confidence, conditions }
+
+5. FRONTEND RECEIVES & DISPLAYS
+   → ChatDisplay component renders analysis text
+   → Shows confidence score (colored badge)
+   → Displays top 3 conditions by default
+   → "Show more" button lets user expand to all 13 conditions
+   → User sees transmission, precautions, recovery time, warnings
+
+6. DATA PERSISTS
+   → Chat message + response saved to localStorage
+   → User closes browser, reopens app → previous chats still visible
+   → Can clear history if needed
+
+
+WHY THIS ARCHITECTURE?
+======================
+
+1. SIMPLICITY
+   - No database needed (MVP uses browser storage)
+   - No complex build process
+   - One codebase (TypeScript everywhere)
+
+2. SPEED
+   - Next.js Turbopack provides instant hot reloads
+   - React hooks avoid unnecessary re-renders
+   - Tailwind CSS is smaller than writing custom CSS
+
+3. SECURITY
+   - TypeScript catches bugs at compile time
+   - Input validation & sanitization prevent XSS
+   - Rate limiting prevents abuse
+   - Auth header validates user identity
+
+4. SCALABILITY
+   - Can easily add real database (replace localStorage)
+   - Can add backend authentication (JWT tokens)
+   - Can scale horizontally (add more servers)
+   - Can integrate with ML models for better analysis
+
+5. MAINTAINABILITY
+   - Clean file structure (routes, components, logic separate)
+   - Type safety (TypeScript prevents silent bugs)
+   - Reusable components (FormInput, ChatDisplay)
+   - Well-commented code
+
+
+NEXT STEPS FOR ENHANCEMENT
+===========================
+
+Phase 2:
+- Add database (PostgreSQL + Prisma ORM)
+- Add user accounts & login
+- Store conversation history on server
+- Add email notifications
+
+Phase 3:
+- Integrate real ML model (e.g., Hugging Face API)
+- Add multi-language support
+- Add mobile app (React Native)
+- Add doctor referral system
+
+Phase 4:
+- HIPAA compliance
+- Real-time telemedicine integration
+- Insurance verification
+- Prescription integration
+
+
+DEPLOYMENT
+==========
+
+Current: Development (npm run dev on localhost:3000)
+
+Production:
+- npm run build    (compiles to optimized .next folder)
+- npm start        (runs production build)
+- Deploy to Vercel (free, automatic from GitHub)
+- Or use Docker + any cloud (AWS, GCP, Azure, DigitalOcean)
+
+
+TESTING
+=======
+
+Manual testing:
+- curl requests to /api/analyze endpoint
+- Browser testing via http://localhost:3000/chat
+- Check Network tab in DevTools to see requests/responses
+
+Automated testing (TODO):
+- Jest for unit tests
+- Playwright for end-to-end tests
+- Load testing with k6
+
+
+KEY FILES TO UNDERSTAND
+=======================
+
+1. /src/lib/healthcareApi.ts        → Core medical logic
+2. /src/app/api/analyze/route.ts    → API security & routing
+3. /src/app/chat/page.tsx           → Main UI
+4. /src/components/ChatDisplay.tsx  → Renders results
+5. /src/lib/authContext.tsx         → User auth
+
+
+GLOSSARY
+========
+
+API:                 Application Programming Interface (way for frontend to talk to backend)
+Endpoint:            A URL that accepts requests (e.g., /api/analyze)
+Route Handler:       Next.js file (route.ts) that processes requests
+Component:           Reusable React UI piece (like a button or form)
+Sanitization:        Cleaning user input to prevent attacks
+Rate Limiting:       Restricting how many requests a user can make per minute
+Payload:             Data sent in a request body
+localStorage:        Browser's built-in storage (persists after refresh)
+TypeScript:          JavaScript with type checking
+JSX:                 HTML-like syntax in JavaScript (used in React)
+State:               Data that a component manages and can change
+
+
+================================================================================
+                              END OF OVERVIEW
+                  For questions, see comments in source code
+================================================================================
