@@ -1,6 +1,9 @@
 'use client';
 
 import { createContext, useContext, useState, ReactNode } from 'react';
+'use client';
+
+import { createContext, useContext, useState, ReactNode } from 'react';
 
 interface User {
   id: string;
@@ -24,7 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const storedUser = localStorage.getItem('chatbot_user');
       return storedUser ? (JSON.parse(storedUser) as User) : null;
-    } catch (error) {
+    } catch {
       try {
         localStorage.removeItem('chatbot_user');
       } catch {}
@@ -32,17 +35,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   });
 
-  const [isLoading, _setIsLoading] = useState(false);
-
   const isLoading = false;
-    // Simple validation - in production, this would be a real backend call
+
+  const login = (email: string, password: string): boolean => {
     if (!email || !password) {
       return false;
     }
 
-    // Basic email/phone validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const phoneRegex = /^[0-9]{10}$/; // Simple 10-digit phone validation
+    const phoneRegex = /^[0-9]{10}$/;
 
     const isValidEmail = emailRegex.test(email);
     const isValidPhone = phoneRegex.test(email.replace(/\D/g, ''));
@@ -52,7 +53,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return false;
     }
 
-    // Create user object
     const newUser: User = {
       id: Date.now().toString(),
       name: email.split('@')[0] || 'User',
@@ -60,7 +60,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loginTime: new Date().toLocaleString(),
     };
 
-    // Save to localStorage
     localStorage.setItem('chatbot_user', JSON.stringify(newUser));
     setUser(newUser);
     return true;
@@ -84,4 +83,5 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
+}
 }
