@@ -83,6 +83,9 @@ async function analyzeWithHuggingFace(
     emergencyWarnings?: string[];
   }[] 
 }> {
+  // Mark `_patientProfile` as intentionally unused to satisfy linters.
+  void _patientProfile;
+
   const prompt = HEALTH_ANALYSIS_PROMPT(symptoms, additionalInfo, otherRelevantInfo || '');
 
   const response = await fetch('https://api-inference.huggingface.co/models/gpt2', {
