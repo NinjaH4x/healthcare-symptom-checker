@@ -197,7 +197,7 @@ export default function SymptomForm({ onSubmit, isLoading, isCompact = false }: 
               label="Severity"
               as="select"
               value={severity}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSeverity(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setSeverity(e.target.value)}
               options={[{ value: 'mild', label: 'Mild' }, { value: 'moderate', label: 'Moderate' }, { value: 'severe', label: 'Severe' }]}
             />
           </div>
