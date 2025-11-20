@@ -34,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const [isLoading, _setIsLoading] = useState(false);
 
-  const login = (email: string, password: string): boolean => {
+  const isLoading = false;
     // Simple validation - in production, this would be a real backend call
     if (!email || !password) {
       return false;
