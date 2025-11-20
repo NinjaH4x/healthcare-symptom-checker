@@ -1,9 +1,6 @@
 'use client';
 
 import { createContext, useContext, useState, ReactNode } from 'react';
-'use client';
-
-import { createContext, useContext, useState, ReactNode } from 'react';
 
 interface User {
   id: string;
@@ -84,4 +81,4 @@ export function useAuth() {
   }
   return context;
 }
-}
+ 
