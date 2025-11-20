@@ -184,11 +184,11 @@ export default function SymptomForm({ onSubmit, isLoading, isCompact = false }: 
         {/* Duration */}
         <div className="grid grid-cols-3 gap-2">
           <div>
-            <FormInput id="duration" label="How long?" value={duration} onChange={(e: any) => setDuration(e.target.value)} placeholder="e.g., 2 days" />
+            <FormInput id="duration" label="How long?" value={duration} onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setDuration(e.target.value)} placeholder="e.g., 2 days" />
           </div>
 
           <div>
-            <FormInput id="temperature" label="Temp (°C)" type="number" value={temperature} onChange={(e: any) => setTemperature(e.target.value)} placeholder="e.g., 38.5" />
+            <FormInput id="temperature" label="Temp (°C)" type="number" value={temperature} onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setTemperature(e.target.value)} placeholder="e.g., 38.5" />
           </div>
 
           <div>
@@ -197,7 +197,7 @@ export default function SymptomForm({ onSubmit, isLoading, isCompact = false }: 
               label="Severity"
               as="select"
               value={severity}
-              onChange={(e: any) => setSeverity(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSeverity(e.target.value)}
               options={[{ value: 'mild', label: 'Mild' }, { value: 'moderate', label: 'Moderate' }, { value: 'severe', label: 'Severe' }]}
             />
           </div>

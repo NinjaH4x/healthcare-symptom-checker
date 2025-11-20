@@ -19,22 +19,20 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Load user from localStorage on mount
-  useEffect(() => {
-    const storedUser = localStorage.getItem('chatbot_user');
-    if (storedUser) {
+  const [user, setUser] = useState<User | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const storedUser = localStorage.getItem('chatbot_user');
+      return storedUser ? (JSON.parse(storedUser) as User) : null;
+    } catch (error) {
       try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error('Error parsing stored user:', error);
         localStorage.removeItem('chatbot_user');
-      }
+      } catch {}
+      return null;
     }
-    setIsLoading(false);
-  }, []);
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const login = (email: string, password: string): boolean => {
     // Simple validation - in production, this would be a real backend call

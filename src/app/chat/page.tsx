@@ -43,7 +43,7 @@ export default function ChatPage() {
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [leftDrawerOpen, setLeftDrawerOpen] = useState(false);
   const [profileExists, setProfileExists] = useState<boolean>(false);
-  const [patientProfile, setPatientProfile] = useState<any>(null);
+  const [patientProfile, setPatientProfile] = useState<Record<string, unknown> | null>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -71,12 +71,12 @@ export default function ChatPage() {
       try {
         const parsed = JSON.parse(saved);
         setConversations(
-          parsed.map((conv: any) => ({
+          parsed.map((conv: Record<string, unknown>) => ({
             ...conv,
-            createdAt: new Date(conv.createdAt),
-            messages: conv.messages.map((msg: any) => ({
+            createdAt: new Date(conv.createdAt as string),
+            messages: (conv.messages as Record<string, unknown>[]).map((msg: Record<string, unknown>) => ({
               ...msg,
-              timestamp: new Date(msg.timestamp),
+              timestamp: new Date(msg.timestamp as string),
             })),
           }))
         );
@@ -235,9 +235,9 @@ export default function ChatPage() {
     router.push('/login');
   };
 
-  const handleProfileSaved = (profile: any) => {
+  const handleProfileSaved = (profile: Record<string, unknown> | null) => {
     setPatientProfile(profile);
-    setProfileExists(true);
+    setProfileExists(Boolean(profile));
   };
 
   if (isLoading) {
@@ -350,8 +350,8 @@ export default function ChatPage() {
               </div>
               {!profileExists ? (
                 // Lazy load to avoid hydration issues
-                // eslint-disable-next-line @next/next/no-async-client-component
                 (() => {
+                  // eslint-disable-next-line @typescript-eslint/no-require-imports
                   const PatientDetailsForm = require('@/components/PatientDetailsForm').default;
                   return <PatientDetailsForm userId={user!.id} onSaved={handleProfileSaved} />;
                 })()

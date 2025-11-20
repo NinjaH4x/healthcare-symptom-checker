@@ -70,7 +70,7 @@ async function analyzeWithHuggingFace(
   additionalInfo: string,
   otherRelevantInfo: string,
   token: string,
-  patientProfile?: { age?: number; sex?: string; weightKg?: number; heightCm?: number } | null
+  _patientProfile?: { age?: number; sex?: string; weightKg?: number; heightCm?: number } | null
 ): Promise<{
   text: string; 
   confidence: number; 
@@ -105,8 +105,12 @@ async function analyzeWithHuggingFace(
   return { text, confidence, conditions: [] };
 }
 
-function analyzeLocally(symptoms: string, additionalInfo: string, otherRelevantInfo?: string, patient?: { age?: number; sex?: string; weightKg?: number; heightCm?: number } ):
-  { text: string; confidence: number; conditions: { condition: string; percentage: number; transmission?: string; precautions?: string[]; recoveryTime?: string; emergencyWarnings?: string[] }[] } {
+function analyzeLocally(
+  symptoms: string,
+  additionalInfo: string,
+  otherRelevantInfo?: string,
+  patient?: { age?: number; sex?: string; weightKg?: number; heightCm?: number }
+): { text: string; confidence: number; conditions: { condition: string; percentage: number; transmission?: string; precautions?: string[]; recoveryTime?: string; emergencyWarnings?: string[] }[] } {
   // Enhanced condition database with medical information
   const conditionScores: { [condition: string]: { 
     keywords: string[]; 
@@ -459,7 +463,7 @@ function analyzeLocally(symptoms: string, additionalInfo: string, otherRelevantI
   let safetyTag = 'Likely safe to follow general self-care advice.';
   try {
     if (patient) {
-      const { age, weightKg, heightCm, sex } = patient as any;
+      const { age } = (patient as { age?: number } ) || {};
       const lowerNotes = safetyNotes.join(' ').toLowerCase();
       if ((typeof age === 'number' && age < 2) || lowerNotes.includes('age under 2')) {
         safetyTag = 'Not safe to self-manage — seek pediatric/urgent medical advice.';

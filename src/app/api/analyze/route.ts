@@ -1,18 +1,26 @@
 import { analyzeSymptoms } from '@/lib/healthcareApi';
 
 // Input validation and sanitization
-function sanitizeInput(input: string, maxLength: number = 1000): string {
+function sanitizeInput(input: unknown, maxLength: number = 1000): string {
   if (typeof input !== 'string') return '';
   return input.slice(0, maxLength).trim();
 }
 
-function validatePatientProfile(profile: any): any {
+interface PatientProfile {
+  age?: number;
+  sex?: string;
+  weightKg?: number;
+  heightCm?: number;
+}
+
+function validatePatientProfile(profile: unknown): PatientProfile | null {
   if (!profile || typeof profile !== 'object') return null;
-  const validated: any = {};
-  if (typeof profile.age === 'number' && profile.age >= 0 && profile.age <= 150) validated.age = profile.age;
-  if (typeof profile.sex === 'string' && ['male', 'female', 'other'].includes(profile.sex.toLowerCase())) validated.sex = profile.sex.toLowerCase();
-  if (typeof profile.weightKg === 'number' && profile.weightKg > 0 && profile.weightKg <= 500) validated.weightKg = profile.weightKg;
-  if (typeof profile.heightCm === 'number' && profile.heightCm > 50 && profile.heightCm <= 250) validated.heightCm = profile.heightCm;
+  const validated: PatientProfile = {};
+  const prof = profile as Record<string, unknown>;
+  if (typeof prof.age === 'number' && prof.age >= 0 && prof.age <= 150) validated.age = prof.age;
+  if (typeof prof.sex === 'string' && ['male', 'female', 'other'].includes(prof.sex.toLowerCase())) validated.sex = prof.sex.toLowerCase();
+  if (typeof prof.weightKg === 'number' && prof.weightKg > 0 && prof.weightKg <= 500) validated.weightKg = prof.weightKg;
+  if (typeof prof.heightCm === 'number' && prof.heightCm > 50 && prof.heightCm <= 250) validated.heightCm = prof.heightCm;
   return Object.keys(validated).length > 0 ? validated : null;
 }
 
@@ -48,7 +56,7 @@ export async function POST(request: Request) {
     }
 
     // Parse and validate body
-    let body: any;
+    let body: unknown;
     try {
       body = await request.json();
     } catch {
@@ -60,10 +68,10 @@ export async function POST(request: Request) {
     }
 
     // Sanitize inputs
-    const symptoms = sanitizeInput(body.symptoms || '', 500);
-    const additionalInfo = sanitizeInput(body.additionalInfo || '', 500);
-    const otherRelevantInfo = sanitizeInput(body.otherRelevantInfo || '', 1000);
-    const patientProfile = validatePatientProfile(body.patientProfile);
+    const symptoms = sanitizeInput((body as Record<string, unknown>).symptoms || '', 500);
+    const additionalInfo = sanitizeInput((body as Record<string, unknown>).additionalInfo || '', 500);
+    const otherRelevantInfo = sanitizeInput((body as Record<string, unknown>).otherRelevantInfo || '', 1000);
+    const patientProfile = validatePatientProfile((body as Record<string, unknown>).patientProfile);
 
     if (!symptoms) {
       return new Response(JSON.stringify({ error: 'Symptoms are required and must be non-empty' }), { status: 400, headers });

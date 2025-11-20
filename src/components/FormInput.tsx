@@ -46,7 +46,7 @@ export default function FormInput({
         <select
           id={id}
           value={String(value)}
-          onChange={onChange as any}
+          onChange={onChange as (e: React.ChangeEvent<HTMLSelectElement>) => void}
           disabled={disabled}
           className={`w-full px-3 py-2 border-2 rounded text-black ${className} ${inputClassName}`}
           style={{ borderColor: '#A6CBFF', backgroundColor: '#F0F6FF' }}
@@ -61,8 +61,8 @@ export default function FormInput({
         <input
           id={id}
           type={type}
-          value={value as any}
-          onChange={onChange as any}
+          value={value as string}
+          onChange={onChange as (e: React.ChangeEvent<HTMLInputElement>) => void}
           placeholder={placeholder}
           disabled={disabled}
           className={`w-full px-3 py-2 border-2 rounded text-black ${className} ${inputClassName}`}
