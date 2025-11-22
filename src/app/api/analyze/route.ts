@@ -1,4 +1,4 @@
-import { analyzeSymptoms } from '@/lib/healthcareApi';
+import { analyzeSymptoms, translateText } from '@/lib/healthcareApi';
 
 // Input validation and sanitization
 function sanitizeInput(input: unknown, maxLength: number = 1000): string {
@@ -80,8 +80,32 @@ export async function POST(request: Request) {
     // Call analyzer (no injection risk; it only does text matching and scoring)
     const result = await analyzeSymptoms(symptoms, additionalInfo, otherRelevantInfo, patientProfile);
 
+    // Language support: check `x-lang` header or Accept-Language
+    const langHeader = (request.headers.get('x-lang') || request.headers.get('accept-language') || 'en').split(',')[0].trim();
+    let analysisText = result.text;
+    let translatedConditions = result.conditions;
+    if (langHeader && !langHeader.toLowerCase().startsWith('en')) {
+      // Try to translate the main analysis text; if translation fails, fallback to English
+      try {
+        analysisText = await translateText(result.text, langHeader);
+        // Translate condition names and emergency warnings where present
+        translatedConditions = await Promise.all(result.conditions.map(async (c) => ({
+          ...c,
+          condition: await translateText(c.condition, langHeader),
+          transmission: c.transmission ? await translateText(c.transmission, langHeader) : undefined,
+          precautions: c.precautions ? await Promise.all(c.precautions.map(p => translateText(p, langHeader))) : undefined,
+          recoveryTime: c.recoveryTime ? await translateText(c.recoveryTime, langHeader) : undefined,
+          emergencyWarnings: c.emergencyWarnings ? await Promise.all(c.emergencyWarnings.map(e => translateText(e, langHeader))) : undefined,
+        })));
+      } catch (e) {
+        console.warn('Translation fallback, returning English:', e);
+        analysisText = result.text;
+        translatedConditions = result.conditions;
+      }
+    }
+
     // Return structured response
-    return new Response(JSON.stringify({ analysis: result.text, confidence: result.confidence, conditions: result.conditions }), { status: 200, headers });
+    return new Response(JSON.stringify({ analysis: analysisText, confidence: result.confidence, conditions: translatedConditions }), { status: 200, headers });
   } catch (error) {
     console.error('API error:', error);
     // Don't expose internal error details to client
