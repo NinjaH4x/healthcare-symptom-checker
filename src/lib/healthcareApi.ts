@@ -66,8 +66,12 @@ export async function analyzeSymptoms(
 }
 
 // Translate text using LibreTranslate or return original text on failure.
-export async function translateText(text: string, targetLang: string): Promise<string> {
-  if (!text || !targetLang || targetLang.toLowerCase().startsWith('en')) return text;
+export async function translateText(text: string, targetLang: string, sourceLang: string = 'en'): Promise<string> {
+  if (!text || !targetLang) return text;
+
+  const src = (sourceLang || 'en').slice(0,2);
+  const tgt = (targetLang || 'en').slice(0,2);
+  if (src === tgt) return text;
 
   // Provider URL can be overridden with NEXT_PUBLIC_LIBRETRANSLATE_URL
   const translateUrl = process.env.NEXT_PUBLIC_LIBRETRANSLATE_URL || 'https://libretranslate.de/translate';
@@ -76,7 +80,7 @@ export async function translateText(text: string, targetLang: string): Promise<s
     const res = await fetch(translateUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ q: text, source: 'en', target: targetLang.slice(0,2), format: 'text' }),
+      body: JSON.stringify({ q: text, source: src, target: tgt, format: 'text' }),
     });
     if (!res.ok) {
       console.warn('Translate request failed', res.statusText);

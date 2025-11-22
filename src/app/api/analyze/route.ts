@@ -77,25 +77,39 @@ export async function POST(request: Request) {
       return new Response(JSON.stringify({ error: 'Symptoms are required and must be non-empty' }), { status: 400, headers });
     }
 
+    // If the request language is not English, translate inputs to English before analysis
+    const langHeader = (request.headers.get('x-lang') || request.headers.get('accept-language') || 'en').split(',')[0].trim();
+    let analysisInputSymptoms = symptoms;
+    let analysisInputAdditional = additionalInfo;
+    let analysisInputOther = otherRelevantInfo;
+    if (langHeader && !langHeader.toLowerCase().startsWith('en')) {
+      try {
+        analysisInputSymptoms = await translateText(symptoms, 'en', langHeader);
+        analysisInputAdditional = await translateText(additionalInfo, 'en', langHeader);
+        analysisInputOther = await translateText(otherRelevantInfo, 'en', langHeader);
+      } catch (e) {
+        console.warn('Failed to translate inputs to English, proceeding with original inputs', e);
+      }
+    }
+
     // Call analyzer (no injection risk; it only does text matching and scoring)
-    const result = await analyzeSymptoms(symptoms, additionalInfo, otherRelevantInfo, patientProfile);
+    const result = await analyzeSymptoms(analysisInputSymptoms, analysisInputAdditional, analysisInputOther, patientProfile);
 
     // Language support: check `x-lang` header or Accept-Language
-    const langHeader = (request.headers.get('x-lang') || request.headers.get('accept-language') || 'en').split(',')[0].trim();
     let analysisText = result.text;
     let translatedConditions = result.conditions;
     if (langHeader && !langHeader.toLowerCase().startsWith('en')) {
       // Try to translate the main analysis text; if translation fails, fallback to English
       try {
-        analysisText = await translateText(result.text, langHeader);
+        analysisText = await translateText(result.text, langHeader, 'en');
         // Translate condition names and emergency warnings where present
         translatedConditions = await Promise.all(result.conditions.map(async (c) => ({
           ...c,
-          condition: await translateText(c.condition, langHeader),
-          transmission: c.transmission ? await translateText(c.transmission, langHeader) : undefined,
-          precautions: c.precautions ? await Promise.all(c.precautions.map(p => translateText(p, langHeader))) : undefined,
-          recoveryTime: c.recoveryTime ? await translateText(c.recoveryTime, langHeader) : undefined,
-          emergencyWarnings: c.emergencyWarnings ? await Promise.all(c.emergencyWarnings.map(e => translateText(e, langHeader))) : undefined,
+          condition: await translateText(c.condition, langHeader, 'en'),
+          transmission: c.transmission ? await translateText(c.transmission, langHeader, 'en') : undefined,
+          precautions: c.precautions ? await Promise.all(c.precautions.map(p => translateText(p, langHeader, 'en'))) : undefined,
+          recoveryTime: c.recoveryTime ? await translateText(c.recoveryTime, langHeader, 'en') : undefined,
+          emergencyWarnings: c.emergencyWarnings ? await Promise.all(c.emergencyWarnings.map(e => translateText(e, langHeader, 'en'))) : undefined,
         })));
       } catch (e) {
         console.warn('Translation fallback, returning English:', e);

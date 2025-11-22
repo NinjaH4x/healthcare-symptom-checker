@@ -57,36 +57,37 @@ export default function SymptomForm({ onSubmit, isLoading, isCompact = false }: 
 
   const { lang } = useLang();
 
-  return (
-    <div className="bg-white rounded-lg shadow-lg p-6 flex flex-col h-full">
-      <h3 className="text-lg font-semibold mb-3" style={{ color: '#23408e' }}>{t('form.heading', lang)}</h3>
-
-      <form onSubmit={handleSubmit} className="space-y-4 flex-1 overflow-y-auto">
-        {/* Main Symptoms */}
-        <div>
-          <label htmlFor="symptoms" className="block text-sm font-medium mb-2" style={{ color: '#23408e' }}>
-            {t('form.symptomsLabel', lang)}
-          </label>
-          
-          {/* Quick Templates (ChatGPT-style chips, below the label) */}
-          <div className="mb-3">
-            <p className="text-xs font-medium mb-2" style={{ color: '#23408e' }}>{t('form.quickTemplates', lang)}</p>
-            
-            {/* Respiratory Symptoms */}
-            <div className="mb-2">
-              <p className="text-xs font-semibold mb-1" style={{ color: '#464444' }}>🫁 Respiratory:</p>
-              <div className="flex flex-wrap gap-2">
                 {[
-                  { key: 'cough', label: '😷 Cough', value: 'Cough' },
-                  { key: 'sorethroat', label: '🤒 Sore Throat', value: 'Sore Throat' },
-                  { key: 'runnyose', label: '🤧 Runny Nose', value: 'Runny Nose' },
-                  { key: 'sneezing', label: '🤧 Sneezing', value: 'Sneezing' },
-                  { key: 'breathlessness', label: '😮‍💨 Breathlessness', value: 'Breathlessness' },
-                ].map((t) => (
+                  { key: 'fever', emoji: '🌡️', value: 'Fever' },
+                  { key: 'headache', emoji: '🤕', value: 'Headache' },
+                  { key: 'bodyache', emoji: '💪', value: 'Body Ache' },
+                  { key: 'fatigue', emoji: '😴', value: 'Fatigue' },
+                  { key: 'chills', emoji: '❄️', value: 'Chills' },
+                ].map((item) => (
+                  <button
+                    type="button"
+                    key={item.key}
+                    onClick={() => {
+                      setSymptoms((prev) => {
+                        const trimmed = prev ? prev.trim() : '';
+                        if (!trimmed) return item.value;
+                        const parts = trimmed.split(/,\s*/).map(p => p.trim());
+                        if (parts.some(p => p.toLowerCase() === item.value.toLowerCase())) return trimmed;
+                        return `${trimmed}, ${item.value}`;
+                      });
+                    }}
+                    disabled={isLoading}
+                    className="px-3 py-1 text-sm border rounded-md transition disabled:opacity-50"
+                    style={{ backgroundColor: '#F7EFD2', color: '#23408e', borderColor: '#A6CBFF' }}
+                  >
+                    {item.emoji} {t(`symptom.${item.key}`, lang)}
+                  </button>
+                ))}
                   <button
                     type="button"
                     key={t.key}
                     onClick={() => {
+                      // use English value for analyzer input, but display label localized
                       setSymptoms((prev) => {
                         const trimmed = prev ? prev.trim() : '';
                         if (!trimmed) return t.value;
@@ -99,65 +100,65 @@ export default function SymptomForm({ onSubmit, isLoading, isCompact = false }: 
                     className="px-3 py-1 text-sm border rounded-md transition disabled:opacity-50"
                     style={{ backgroundColor: '#F7EFD2', color: '#23408e', borderColor: '#A6CBFF' }}
                   >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* General Symptoms */}
-            <div className="mb-2">
-              <p className="text-xs font-semibold mb-1" style={{ color: '#464444' }}>🌡️ General:</p>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { key: 'fever', label: '🌡️ Fever', value: 'Fever' },
-                  { key: 'headache', label: '🤕 Headache', value: 'Headache' },
-                  { key: 'bodyache', label: '💪 Body Ache', value: 'Body Ache' },
-                  { key: 'fatigue', label: '😴 Fatigue', value: 'Fatigue' },
-                  { key: 'chills', label: '❄️ Chills', value: 'Chills' },
-                ].map((t) => (
-                  <button
-                    type="button"
-                    key={t.key}
-                    onClick={() => {
-                      setSymptoms((prev) => {
-                        const trimmed = prev ? prev.trim() : '';
-                        if (!trimmed) return t.value;
-                        const parts = trimmed.split(/,\s*/).map(p => p.trim());
-                        if (parts.some(p => p.toLowerCase() === t.value.toLowerCase())) return trimmed;
-                        return `${trimmed}, ${t.value}`;
-                      });
+                    {t.emoji} {t(t=>t)}
+                  {[
+                    { key: 'cough', emoji: '😷', value: 'Cough' },
+                    { key: 'sorethroat', emoji: '🤒', value: 'Sore Throat' },
+                    { key: 'runnynose', emoji: '🤧', value: 'Runny Nose' },
+                    { key: 'sneezing', emoji: '🤧', value: 'Sneezing' },
+                    { key: 'breathlessness', emoji: '😮‍💨', value: 'Breathlessness' },
+                  ].map((item) => (
+                    <button
+                      type="button"
+                      key={item.key}
+                      onClick={() => {
+                        // use English value for analyzer input, but display label localized
+                        setSymptoms((prev) => {
+                          const trimmed = prev ? prev.trim() : '';
+                          if (!trimmed) return item.value;
+                          const parts = trimmed.split(/,\s*/).map(p => p.trim());
+                          if (parts.some(p => p.toLowerCase() === item.value.toLowerCase())) return trimmed;
+                          return `${trimmed}, ${item.value}`;
+                        });
+                      }}
+                      disabled={isLoading}
+                      className="px-3 py-1 text-sm border rounded-md transition disabled:opacity-50"
+                      style={{ backgroundColor: '#F7EFD2', color: '#23408e', borderColor: '#A6CBFF' }}
+                    >
+                      {item.emoji} {t(`symptom.${item.key}`, lang)}
+                    </button>
+                  ))}
                     }}
                     disabled={isLoading}
                     className="px-3 py-1 text-sm border rounded-md transition disabled:opacity-50"
                     style={{ backgroundColor: '#F7EFD2', color: '#23408e', borderColor: '#A6CBFF' }}
                   >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Digestive Symptoms */}
-            <div>
-              <p className="text-xs font-semibold mb-1" style={{ color: '#464444' }}>🤢 Digestive:</p>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { key: 'nausea', label: '🤢 Nausea', value: 'Nausea' },
-                  { key: 'vomiting', label: '🤮 Vomiting', value: 'Vomiting' },
-                  { key: 'diarrhea', label: '💩 Diarrhea', value: 'Diarrhea' },
-                  { key: 'abdominal', label: '😣 Abdominal Pain', value: 'Abdominal Pain' },
-                  { key: 'loss', label: '🍽️ Loss of Appetite', value: 'Loss of Appetite' },
-                ].map((t) => (
-                  <button
-                    type="button"
-                    key={t.key}
-                    onClick={() => {
-                      setSymptoms((prev) => {
-                        const trimmed = prev ? prev.trim() : '';
-                        if (!trimmed) return t.value;
-                        const parts = trimmed.split(/,\s*/).map(p => p.trim());
-                        if (parts.some(p => p.toLowerCase() === t.value.toLowerCase())) return trimmed;
+                    {[
+                      { key: 'nausea', emoji: '🤢', value: 'Nausea' },
+                      { key: 'vomiting', emoji: '🤮', value: 'Vomiting' },
+                      { key: 'diarrhea', emoji: '💩', value: 'Diarrhea' },
+                      { key: 'abdominal', emoji: '😣', value: 'Abdominal Pain' },
+                      { key: 'lossofappetite', emoji: '🍽️', value: 'Loss of Appetite' },
+                    ].map((item) => (
+                      <button
+                        type="button"
+                        key={item.key}
+                        onClick={() => {
+                          setSymptoms((prev) => {
+                            const trimmed = prev ? prev.trim() : '';
+                            if (!trimmed) return item.value;
+                            const parts = trimmed.split(/,\s*/).map(p => p.trim());
+                            if (parts.some(p => p.toLowerCase() === item.value.toLowerCase())) return trimmed;
+                            return `${trimmed}, ${item.value}`;
+                          });
+                        }}
+                        disabled={isLoading}
+                        className="px-3 py-1 text-sm border rounded-md transition disabled:opacity-50"
+                        style={{ backgroundColor: '#F7EFD2', color: '#23408e', borderColor: '#A6CBFF' }}
+                      >
+                        {item.emoji} {t(`symptom.${item.key}`, lang)}
+                      </button>
+                    ))}
                         return `${trimmed}, ${t.value}`;
                       });
                     }}
