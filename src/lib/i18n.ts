@@ -1,0 +1,81 @@
+const dictionaries: Record<string, Record<string, string>> = {
+  en: {
+    title: 'HealthCare AI Assistant',
+    subtitle: 'Medical Symptom Analyzer',
+    'form.heading': 'Describe Your Symptoms',
+    'form.symptomsLabel': 'What symptoms are you experiencing? *',
+    'form.quickTemplates': 'Common symptoms (click to add):',
+    'form.duration': 'How long?',
+    'form.temperature': 'Temp (°C)',
+    'form.severity': 'Severity',
+    'form.tempAfter': 'Fever onset relative to symptoms',
+    'form.additionalInfo': 'Any other relevant information?',
+    'form.submit': 'Get Health Insight',
+    'form.analyzing': 'Analyzing...',
+    'placeholders.symptoms': 'e.g., headache, fever, cough, body aches...',
+    'placeholders.duration': "e.g., 2 days",
+    'placeholders.temperature': "e.g., 38.5",
+    'placeholders.tempAfter': "e.g., same time, 1 day after",
+    'placeholders.additionalInfo': "e.g., medical history, medications, allergies...",
+    'alerts.enterSymptom': 'Please enter at least one symptom',
+    'alerts.tempRange': 'Temperature must be between 35°C and 42°C',
+    'alerts.durationPositive': 'Duration must be a positive number',
+    'disclaimer': '* This tool provides educational information only. Always consult a healthcare professional.'
+  },
+  hi: {
+    title: 'हेल्थकेयर एआई सहायक',
+    subtitle: 'चिकित्सा लक्षण विश्लेषक',
+    'form.heading': 'अपने लक्षणों का वर्णन करें',
+    'form.symptomsLabel': 'आप किन लक्षणों का अनुभव कर रहे हैं? *',
+    'form.quickTemplates': 'सामान्य लक्षण (क्लिक करें जोड़ने के लिए):',
+    'form.duration': 'कितने समय से?',
+    'form.temperature': 'तापमान (°C)',
+    'form.severity': 'तीव्रता',
+    'form.tempAfter': 'लक्षणों के सापेक्ष बुखार की शुरुआत',
+    'form.additionalInfo': 'कोई अन्य संबंधित जानकारी?',
+    'form.submit': 'स्वास्थ्य जानकारी प्राप्त करें',
+    'form.analyzing': 'विश्लेषण हो रहा है...',
+    'placeholders.symptoms': 'उदा., सिरदर्द, बुखार, खांसी, बदन दर्द...',
+    'placeholders.duration': 'उदा., 2 दिन',
+    'placeholders.temperature': 'उदा., 38.5',
+    'placeholders.tempAfter': 'उदा., एक ही समय, 1 दिन बाद',
+    'placeholders.additionalInfo': 'उदा., चिकित्सा इतिहास, दवाएं, एलर्जी...',
+    'alerts.enterSymptom': 'कृपया कम से कम एक लक्षण दर्ज करें',
+    'alerts.tempRange': 'तापमान 35°C और 42°C के बीच होना चाहिए',
+    'alerts.durationPositive': 'अवधि सकारात्मक संख्या होनी चाहिए',
+    'disclaimer': '* यह टूल केवल शैक्षिक जानकारी प्रदान करता है। हमेशा किसी स्वास्थ्य पेशेवर से सलाह लें।'
+  },
+  mr: {
+    title: 'हेल्थकेअर एआय सहाय्यक',
+    subtitle: 'वैद्यकीय लक्षण विश्लेषक',
+    'form.heading': 'आपली लक्षणे वर्णन करा',
+    'form.symptomsLabel': 'आपल्याला कोणती लक्षणे आहेत?',
+    'form.quickTemplates': 'सामान्य लक्षणे (क्लिक करून जोडा):',
+    'form.duration': 'किती काळापासून?',
+    'form.temperature': 'तापमान (°C)',
+    'form.severity': 'तीव्रता',
+    'form.tempAfter': 'लक्षणांशी संबंधित ताप येण्याची वेळ',
+    'form.additionalInfo': 'अधिक संबंधित माहिती?',
+    'form.submit': 'आरोग्य माहिती मिळवा',
+    'form.analyzing': 'विश्लेषित केले जात आहे...',
+    'placeholders.symptoms': 'उदा., डोकेदुखी, ताप, खोकला, अंगदुखी...',
+    'placeholders.duration': 'उदा., 2 दिवस',
+    'placeholders.temperature': 'उदा., 38.5',
+    'placeholders.tempAfter': 'उदा., एकाच वेळी, 1 दिवस नंतर',
+    'placeholders.additionalInfo': 'उदा., वैद्यकीय इतिहास, औषधे, अलर्जी...',
+    'alerts.enterSymptom': 'कृपया किमान एक लक्षण प्रविष्ट करा',
+    'alerts.tempRange': 'तापमान 35°C ते 42°C दरम्यान असावे',
+    'alerts.durationPositive': 'काळ सकारात्मक नंबर असावा',
+    'disclaimer': '* हे साधन फक्त शैक्षणिक माहिती प्रदान करते. नेहमी आरोग्य तज्ञांचा सल्ला घ्या.'
+  }
+};
+
+export function t(key: string, lang: string = 'en'): string {
+  const l = lang && typeof lang === 'string' ? lang.split('-')[0] : 'en';
+  const dict = dictionaries[l] || dictionaries['en'];
+  return dict[key] ?? dictionaries['en'][key] ?? key;
+}
+
+export const supportedLangs = ['en', 'hi', 'mr'];
+
+export default { t, supportedLangs };

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthProvider } from "@/lib/authContext";
+import { LanguageProvider } from '@/lib/langContext';
+import LanguageSelector from '@/components/LanguageSelector';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -29,7 +31,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-          {children}
+          <LanguageProvider>
+            <div style={{ position: 'fixed', top: 8, right: 12, zIndex: 60 }}>
+              <LanguageSelector />
+            </div>
+            {children}
+          </LanguageProvider>
         </AuthProvider>
       </body>
     </html>

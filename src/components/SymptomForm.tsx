@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import FormInput from './FormInput';
+import { useLang } from '@/lib/langContext';
+import { t } from '@/lib/i18n';
 
 interface SymptomFormProps {
   onSubmit: (symptoms: string, additionalInfo: string) => void;
@@ -53,20 +55,22 @@ export default function SymptomForm({ onSubmit, isLoading, isCompact = false }: 
   };
  
 
+  const { lang } = useLang();
+
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 flex flex-col h-full">
-      <h3 className="text-lg font-semibold mb-3" style={{ color: '#23408e' }}>Describe Your Symptoms</h3>
+      <h3 className="text-lg font-semibold mb-3" style={{ color: '#23408e' }}>{t('form.heading', lang)}</h3>
 
       <form onSubmit={handleSubmit} className="space-y-4 flex-1 overflow-y-auto">
         {/* Main Symptoms */}
         <div>
           <label htmlFor="symptoms" className="block text-sm font-medium mb-2" style={{ color: '#23408e' }}>
-            What symptoms are you experiencing? *
+            {t('form.symptomsLabel', lang)}
           </label>
           
           {/* Quick Templates (ChatGPT-style chips, below the label) */}
           <div className="mb-3">
-            <p className="text-xs font-medium mb-2" style={{ color: '#23408e' }}>Common symptoms (click to add):</p>
+            <p className="text-xs font-medium mb-2" style={{ color: '#23408e' }}>{t('form.quickTemplates', lang)}</p>
             
             {/* Respiratory Symptoms */}
             <div className="mb-2">
@@ -172,7 +176,7 @@ export default function SymptomForm({ onSubmit, isLoading, isCompact = false }: 
             id="symptoms"
             value={symptoms}
             onChange={(e) => setSymptoms(e.target.value)}
-            placeholder="e.g., headache, fever, cough, body aches..."
+            placeholder={t('placeholders.symptoms', lang)}
             className={`w-full px-3 py-2 border-2 rounded resize-none text-[#464444] ${isCompact ? 'py-2 text-sm' : ''}`}
             style={{ borderColor: '#A6CBFF' }}
             rows={4}
@@ -184,17 +188,17 @@ export default function SymptomForm({ onSubmit, isLoading, isCompact = false }: 
         {/* Duration */}
         <div className="grid grid-cols-3 gap-2">
           <div>
-            <FormInput id="duration" label="How long?" value={duration} onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setDuration(e.target.value)} placeholder="e.g., 2 days" />
+            <FormInput id="duration" label={t('form.duration', lang)} value={duration} onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setDuration(e.target.value)} placeholder={t('placeholders.duration', lang)} />
           </div>
 
           <div>
-            <FormInput id="temperature" label="Temp (°C)" type="number" value={temperature} onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setTemperature(e.target.value)} placeholder="e.g., 38.5" />
+            <FormInput id="temperature" label={t('form.temperature', lang)} type="number" value={temperature} onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setTemperature(e.target.value)} placeholder={t('placeholders.temperature', lang)} />
           </div>
 
           <div>
             <FormInput
               id="severity"
-              label="Severity"
+              label={t('form.severity', lang)}
               as="select"
               value={severity}
               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setSeverity(e.target.value)}
@@ -205,14 +209,14 @@ export default function SymptomForm({ onSubmit, isLoading, isCompact = false }: 
 
         <div>
           <label htmlFor="tempAfter" className="text-sm font-medium block mt-2 mb-1" style={{ color: '#23408e' }}>
-            Fever onset relative to symptoms
+            {t('form.tempAfter', lang)}
           </label>
           <input
             id="tempAfter"
             type="text"
             value={tempAfter}
             onChange={(e) => setTempAfter(e.target.value)}
-            placeholder="e.g., same time, 1 day after"
+            placeholder={t('placeholders.tempAfter', lang)}
             className="w-full px-3 py-2 border-2 rounded text-[#464444]"
             style={{ borderColor: '#A6CBFF' }}
             disabled={isLoading}
@@ -241,13 +245,13 @@ export default function SymptomForm({ onSubmit, isLoading, isCompact = false }: 
         {/* Additional Info */}
         <div>
           <label htmlFor="additionalInfo" className="text-sm font-medium block mb-1" style={{ color: '#23408e' }}>
-            Any other relevant information?
+            {t('form.additionalInfo', lang)}
           </label>
           <textarea
             id="additionalInfo"
             value={additionalInfo}
             onChange={(e) => setAdditionalInfo(e.target.value)}
-            placeholder="e.g., medical history, medications, allergies..."
+            placeholder={t('placeholders.additionalInfo', lang)}
             className={`w-full px-3 py-2 border-2 rounded resize-none text-[#464444] ${isCompact ? 'py-2 text-sm' : ''}`}
             style={{ borderColor: '#A6CBFF' }}
             rows={3}
@@ -264,13 +268,12 @@ export default function SymptomForm({ onSubmit, isLoading, isCompact = false }: 
               className="w-full px-4 py-2 text-[#23408e] font-semibold rounded-lg disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed transition"
               style={{ background: 'linear-gradient(90deg, #A6CBFF 0%, #B7FAAF 100%)' }}
             >
-              {isLoading ? 'Analyzing...' : 'Get Health Insight'}
+              {isLoading ? t('form.analyzing', lang) : t('form.submit', lang)}
             </button>
           </div>
 
         <p className="text-xs mt-4" style={{ color: '#464444' }}>
-          * This tool provides educational information only. Always consult a healthcare
-          professional.
+          {t('disclaimer', lang)}
         </p>
       </form>
     </div>

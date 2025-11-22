@@ -5,6 +5,8 @@ import { useAuth } from '@/lib/authContext';
 import { useRouter } from 'next/navigation';
 import ChatDisplay from '@/components/ChatDisplay';
 import SymptomForm from '@/components/SymptomForm';
+import { useLang } from '@/lib/langContext';
+import { t } from '@/lib/i18n';
 
 interface Message {
   id: string;
@@ -257,7 +259,7 @@ export default function ChatPage() {
     <div className="flex h-screen flex-col" style={{ backgroundColor: '#F7EFD2' }}>
       {/* Top Header */}
         <div className="bg-white px-6 py-4 flex items-center justify-between" style={{ borderBottom: '2px solid #A6CBFF' }}>
-        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
           <button
             onClick={() => setLeftPanelOpen(!leftPanelOpen)}
             className="hidden md:inline-flex p-2 rounded-lg"
@@ -276,8 +278,8 @@ export default function ChatPage() {
           </button>
           <span className="text-2xl">🏥</span>
           <div>
-            <h1 className="font-bold" style={{ color: '#23408e' }}>HealthCare AI Assistant</h1>
-            <p className="text-xs" style={{ color: '#464444' }}>Medical Symptom Analyzer</p>
+            <h1 className="font-bold" style={{ color: '#23408e' }}>{t('title', useLang().lang)}</h1>
+            <p className="text-xs" style={{ color: '#464444' }}>{t('subtitle', useLang().lang)}</p>
           </div>
         </div>
 
