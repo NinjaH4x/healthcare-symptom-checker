@@ -11,14 +11,19 @@ type LangContextType = {
 const LangContext = createContext<LangContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<string>(() => {
+  // Initialize to a stable default on both server and client to avoid
+  // hydration mismatches. Read saved language from localStorage on mount
+  // (client-only) and then persist changes.
+  const [lang, setLangState] = useState<string>('en');
+
+  useEffect(() => {
     try {
       const v = typeof window !== 'undefined' ? localStorage.getItem('chatbot_lang') : null;
-      return v && supportedLangs.includes(v) ? v : 'en';
+      if (v && supportedLangs.includes(v)) setLangState(v);
     } catch {
-      return 'en';
+      // ignore
     }
-  });
+  }, []);
 
   useEffect(() => {
     try {

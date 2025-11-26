@@ -36,6 +36,8 @@ export default function ChatPage() {
   const { user, logout, isLoading } = useAuth();
   const router = useRouter();
 
+  const { lang } = useLang();
+
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -155,7 +157,7 @@ export default function ChatPage() {
     try {
       const res = await fetch('/api/analyze', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-user-id': user?.id || '' },
+        headers: { 'Content-Type': 'application/json', 'x-user-id': user?.id || '', 'x-lang': lang },
         body: JSON.stringify({ symptoms, additionalInfo, patientProfile }),
       });
 
@@ -278,8 +280,8 @@ export default function ChatPage() {
           </button>
           <span className="text-2xl">🏥</span>
           <div>
-            <h1 className="font-bold" style={{ color: '#23408e' }}>{t('title', useLang().lang)}</h1>
-            <p className="text-xs" style={{ color: '#464444' }}>{t('subtitle', useLang().lang)}</p>
+            <h1 className="font-bold" style={{ color: '#23408e' }}>{t('title', lang)}</h1>
+            <p className="text-xs" style={{ color: '#464444' }}>{t('subtitle', lang)}</p>
           </div>
         </div>
 

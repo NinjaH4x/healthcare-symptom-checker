@@ -18,29 +18,28 @@ export default function SymptomForm({ onSubmit, isLoading, isCompact = false }: 
   const [temperature, setTemperature] = useState('');
   const [tempAfter, setTempAfter] = useState('');
   const [severity, setSeverity] = useState('moderate');
-  
+
+  const { lang } = useLang();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!symptoms.trim()) {
-      alert('Please enter at least one symptom');
+      alert(t('errors.noSymptoms', lang) || 'Please enter at least one symptom');
       return;
     }
 
-    // Validate temperature if provided
     if (temperature.trim()) {
       const tempNum = parseFloat(temperature);
       if (isNaN(tempNum) || tempNum < 35 || tempNum > 42) {
-        alert('Temperature must be between 35°C and 42°C');
+        alert(t('errors.invalidTemperature', lang) || 'Temperature must be between 35°C and 42°C');
         return;
       }
     }
 
-    // Validate duration if provided
     if (duration.trim()) {
       const durationNum = parseFloat(duration);
       if (isNaN(durationNum) || durationNum < 0) {
-        alert('Duration must be a positive number');
+        alert(t('errors.invalidDuration', lang) || 'Duration must be a positive number');
         return;
       }
     }
@@ -53,10 +52,54 @@ export default function SymptomForm({ onSubmit, isLoading, isCompact = false }: 
     setTemperature('');
     setTempAfter('');
   };
- 
 
-  const { lang } = useLang();
+  const addSymptomValue = (value: string) => {
+    setSymptoms((prev) => {
+      const trimmed = prev ? prev.trim() : '';
+      if (!trimmed) return value;
+      const parts = trimmed.split(/,\s*/).map((p) => p.trim());
+      if (parts.some((p) => p.toLowerCase() === value.toLowerCase())) return trimmed;
+      return `${trimmed}, ${value}`;
+    });
+  };
 
+  return (
+    <div>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label htmlFor="symptoms" className="text-sm font-medium block mb-1" style={{ color: '#23408e' }}>{t('form.symptoms', lang)}</label>
+
+          {/* Quick Templates (localized labels, English values used internally) */}
+          <div className="mb-3">
+            <p className="text-xs font-medium mb-2" style={{ color: '#23408e' }}>{t('form.quickTemplates', lang)}</p>
+
+            <div className="mb-2">
+              <p className="text-xs font-semibold mb-1" style={{ color: '#464444' }}>🫁 {t('form.respiratoryLabel', lang) || 'Respiratory:'}</p>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { key: 'cough', emoji: '😷', value: 'Cough' },
+                  { key: 'sorethroat', emoji: '🤒', value: 'Sore Throat' },
+                  { key: 'runnynose', emoji: '🤧', value: 'Runny Nose' },
+                  { key: 'sneezing', emoji: '🤧', value: 'Sneezing' },
+                  { key: 'breathlessness', emoji: '😮‍💨', value: 'Breathlessness' },
+                ].map((item) => (
+                  <button
+                    type="button"
+                    key={item.key}
+                    onClick={() => addSymptomValue(item.value)}
+                    disabled={isLoading}
+                    className="px-3 py-1 text-sm border rounded-md transition disabled:opacity-50"
+                    style={{ backgroundColor: '#F7EFD2', color: '#23408e', borderColor: '#A6CBFF' }}
+                  >
+                    {item.emoji} {t(`symptom.${item.key}`, lang)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-2">
+              <p className="text-xs font-semibold mb-1" style={{ color: '#464444' }}>🌡️ {t('form.generalLabel', lang) || 'General:'}</p>
+              <div className="flex flex-wrap gap-2">
                 {[
                   { key: 'fever', emoji: '🌡️', value: 'Fever' },
                   { key: 'headache', emoji: '🤕', value: 'Headache' },
@@ -67,15 +110,7 @@ export default function SymptomForm({ onSubmit, isLoading, isCompact = false }: 
                   <button
                     type="button"
                     key={item.key}
-                    onClick={() => {
-                      setSymptoms((prev) => {
-                        const trimmed = prev ? prev.trim() : '';
-                        if (!trimmed) return item.value;
-                        const parts = trimmed.split(/,\s*/).map(p => p.trim());
-                        if (parts.some(p => p.toLowerCase() === item.value.toLowerCase())) return trimmed;
-                        return `${trimmed}, ${item.value}`;
-                      });
-                    }}
+                    onClick={() => addSymptomValue(item.value)}
                     disabled={isLoading}
                     className="px-3 py-1 text-sm border rounded-md transition disabled:opacity-50"
                     style={{ backgroundColor: '#F7EFD2', color: '#23408e', borderColor: '#A6CBFF' }}
@@ -83,90 +118,28 @@ export default function SymptomForm({ onSubmit, isLoading, isCompact = false }: 
                     {item.emoji} {t(`symptom.${item.key}`, lang)}
                   </button>
                 ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold mb-1" style={{ color: '#464444' }}>🤢 {t('form.digestiveLabel', lang) || 'Digestive:'}</p>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { key: 'nausea', emoji: '🤢', value: 'Nausea' },
+                  { key: 'vomiting', emoji: '🤮', value: 'Vomiting' },
+                  { key: 'diarrhea', emoji: '💩', value: 'Diarrhea' },
+                  { key: 'abdominal', emoji: '😣', value: 'Abdominal Pain' },
+                  { key: 'lossofappetite', emoji: '🍽️', value: 'Loss of Appetite' },
+                ].map((item) => (
                   <button
                     type="button"
-                    key={t.key}
-                    onClick={() => {
-                      // use English value for analyzer input, but display label localized
-                      setSymptoms((prev) => {
-                        const trimmed = prev ? prev.trim() : '';
-                        if (!trimmed) return t.value;
-                        const parts = trimmed.split(/,\s*/).map(p => p.trim());
-                        if (parts.some(p => p.toLowerCase() === t.value.toLowerCase())) return trimmed;
-                        return `${trimmed}, ${t.value}`;
-                      });
-                    }}
+                    key={item.key}
+                    onClick={() => addSymptomValue(item.value)}
                     disabled={isLoading}
                     className="px-3 py-1 text-sm border rounded-md transition disabled:opacity-50"
                     style={{ backgroundColor: '#F7EFD2', color: '#23408e', borderColor: '#A6CBFF' }}
                   >
-                    {t.emoji} {t(t=>t)}
-                  {[
-                    { key: 'cough', emoji: '😷', value: 'Cough' },
-                    { key: 'sorethroat', emoji: '🤒', value: 'Sore Throat' },
-                    { key: 'runnynose', emoji: '🤧', value: 'Runny Nose' },
-                    { key: 'sneezing', emoji: '🤧', value: 'Sneezing' },
-                    { key: 'breathlessness', emoji: '😮‍💨', value: 'Breathlessness' },
-                  ].map((item) => (
-                    <button
-                      type="button"
-                      key={item.key}
-                      onClick={() => {
-                        // use English value for analyzer input, but display label localized
-                        setSymptoms((prev) => {
-                          const trimmed = prev ? prev.trim() : '';
-                          if (!trimmed) return item.value;
-                          const parts = trimmed.split(/,\s*/).map(p => p.trim());
-                          if (parts.some(p => p.toLowerCase() === item.value.toLowerCase())) return trimmed;
-                          return `${trimmed}, ${item.value}`;
-                        });
-                      }}
-                      disabled={isLoading}
-                      className="px-3 py-1 text-sm border rounded-md transition disabled:opacity-50"
-                      style={{ backgroundColor: '#F7EFD2', color: '#23408e', borderColor: '#A6CBFF' }}
-                    >
-                      {item.emoji} {t(`symptom.${item.key}`, lang)}
-                    </button>
-                  ))}
-                    }}
-                    disabled={isLoading}
-                    className="px-3 py-1 text-sm border rounded-md transition disabled:opacity-50"
-                    style={{ backgroundColor: '#F7EFD2', color: '#23408e', borderColor: '#A6CBFF' }}
-                  >
-                    {[
-                      { key: 'nausea', emoji: '🤢', value: 'Nausea' },
-                      { key: 'vomiting', emoji: '🤮', value: 'Vomiting' },
-                      { key: 'diarrhea', emoji: '💩', value: 'Diarrhea' },
-                      { key: 'abdominal', emoji: '😣', value: 'Abdominal Pain' },
-                      { key: 'lossofappetite', emoji: '🍽️', value: 'Loss of Appetite' },
-                    ].map((item) => (
-                      <button
-                        type="button"
-                        key={item.key}
-                        onClick={() => {
-                          setSymptoms((prev) => {
-                            const trimmed = prev ? prev.trim() : '';
-                            if (!trimmed) return item.value;
-                            const parts = trimmed.split(/,\s*/).map(p => p.trim());
-                            if (parts.some(p => p.toLowerCase() === item.value.toLowerCase())) return trimmed;
-                            return `${trimmed}, ${item.value}`;
-                          });
-                        }}
-                        disabled={isLoading}
-                        className="px-3 py-1 text-sm border rounded-md transition disabled:opacity-50"
-                        style={{ backgroundColor: '#F7EFD2', color: '#23408e', borderColor: '#A6CBFF' }}
-                      >
-                        {item.emoji} {t(`symptom.${item.key}`, lang)}
-                      </button>
-                    ))}
-                        return `${trimmed}, ${t.value}`;
-                      });
-                    }}
-                    disabled={isLoading}
-                    className="px-3 py-1 text-sm border rounded-md transition disabled:opacity-50"
-                    style={{ backgroundColor: '#F7EFD2', color: '#23408e', borderColor: '#A6CBFF' }}
-                  >
-                    {t.label}
+                    {item.emoji} {t(`symptom.${item.key}`, lang)}
                   </button>
                 ))}
               </div>
@@ -186,8 +159,7 @@ export default function SymptomForm({ onSubmit, isLoading, isCompact = false }: 
           />
         </div>
 
-        {/* Duration */}
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-2 mt-3">
           <div>
             <FormInput id="duration" label={t('form.duration', lang)} value={duration} onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setDuration(e.target.value)} placeholder={t('placeholders.duration', lang)} />
           </div>
@@ -208,7 +180,7 @@ export default function SymptomForm({ onSubmit, isLoading, isCompact = false }: 
           </div>
         </div>
 
-        <div>
+        <div className="mt-3">
           <label htmlFor="tempAfter" className="text-sm font-medium block mt-2 mb-1" style={{ color: '#23408e' }}>
             {t('form.tempAfter', lang)}
           </label>
@@ -224,27 +196,7 @@ export default function SymptomForm({ onSubmit, isLoading, isCompact = false }: 
           />
         </div>
 
-        {/* Severity */}
-        <div>
-          <label htmlFor="severity" className="block text-sm font-medium mb-2" style={{ color: '#23408e' }}>
-            Symptom Severity
-          </label>
-          <select
-            id="severity"
-            value={severity}
-            onChange={(e) => setSeverity(e.target.value)}
-            className="w-full px-4 py-2 border-2 rounded-lg focus:ring-2 focus:border-transparent text-[#464444]"
-            style={{ borderColor: '#A6CBFF' }}
-            disabled={isLoading}
-          >
-            <option value="mild">Mild</option>
-            <option value="moderate">Moderate</option>
-            <option value="severe">Severe</option>
-          </select>
-        </div>
-
-        {/* Additional Info */}
-        <div>
+        <div className="mt-3">
           <label htmlFor="additionalInfo" className="text-sm font-medium block mb-1" style={{ color: '#23408e' }}>
             {t('form.additionalInfo', lang)}
           </label>
@@ -260,18 +212,16 @@ export default function SymptomForm({ onSubmit, isLoading, isCompact = false }: 
           />
         </div>
 
-          {/* No file upload in this version */}
-        {/* Submit Button */}
-          <div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full px-4 py-2 text-[#23408e] font-semibold rounded-lg disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed transition"
-              style={{ background: 'linear-gradient(90deg, #A6CBFF 0%, #B7FAAF 100%)' }}
-            >
-              {isLoading ? t('form.analyzing', lang) : t('form.submit', lang)}
-            </button>
-          </div>
+        <div className="mt-4">
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full px-4 py-2 text-[#23408e] font-semibold rounded-lg disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed transition"
+            style={{ background: 'linear-gradient(90deg, #A6CBFF 0%, #B7FAAF 100%)' }}
+          >
+            {isLoading ? t('form.analyzing', lang) : t('form.submit', lang)}
+          </button>
+        </div>
 
         <p className="text-xs mt-4" style={{ color: '#464444' }}>
           {t('disclaimer', lang)}

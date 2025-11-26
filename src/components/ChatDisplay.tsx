@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useLang } from '@/lib/langContext';
+import { t } from '@/lib/i18n';
 
 
 interface Message {
@@ -34,8 +36,9 @@ export default function ChatDisplay({ messages, loading, error, onShowMore }: Ch
     endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  const formatTime = (d: Date) =>
-    new Date(d).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const { lang } = useLang();
+  const locale = lang === 'hi' ? 'hi-IN' : lang === 'mr' ? 'mr-IN' : 'en-US';
+  const formatTime = (d: Date) => new Date(d).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
 
   const renderConfidenceBadge = (confidence?: number) => {
     if (typeof confidence !== 'number') return null;
@@ -114,12 +117,12 @@ export default function ChatDisplay({ messages, loading, error, onShowMore }: Ch
                         onClick={() => onShowMore?.(m.id)}
                         className="text-xs px-3 py-1 bg-[#E6F0FF] text-[#23408e] rounded-lg border border-[#A6CBFF] hover:bg-[#D0E0FF] transition"
                       >
-                        Show more conditions
+                        {t('chat.showMore', lang)}
                       </button>
                     )}
                     {m.showAllConditions && (
                       <div className="bg-[#F7EFD2] p-4 rounded-lg text-xs space-y-3 max-w-2xl">
-                        <p className="font-semibold text-[#23408e] mb-3">📋 All Possible Conditions:</p>
+                        <p className="font-semibold text-[#23408e] mb-3">📋 {t('chat.allPossibleConditions', lang)}</p>
                         {m.conditions.map((cond, idx) => (
                           <div key={idx} className="bg-white p-3 rounded-lg border-l-4 border-[#A6CBFF] space-y-2">
                             <div className="flex justify-between items-center">
@@ -129,21 +132,21 @@ export default function ChatDisplay({ messages, loading, error, onShowMore }: Ch
                             
                             {cond.transmission && (
                               <div>
-                                <p className="font-medium text-[#23408e]">📦 How It Enters Your Body:</p>
+                                <p className="font-medium text-[#23408e]">📦 {t('chat.howItEnters', lang)}</p>
                                 <p className="text-[#464444] ml-2">{cond.transmission}</p>
                               </div>
                             )}
                             
                             {cond.recoveryTime && (
                               <div>
-                                <p className="font-medium text-[#23408e]">⏱️ Recovery Time:</p>
+                                <p className="font-medium text-[#23408e]">⏱️ {t('chat.recoveryTime', lang)}</p>
                                 <p className="text-[#464444] ml-2">{cond.recoveryTime}</p>
                               </div>
                             )}
                             
                             {cond.precautions && cond.precautions.length > 0 && (
                               <div>
-                                <p className="font-medium text-[#23408e]">🛡️ Precautions to Prevent Further Infection:</p>
+                                <p className="font-medium text-[#23408e]">🛡️ {t('chat.precautions', lang)}</p>
                                 <ul className="text-[#464444] ml-2 space-y-1">
                                   {cond.precautions.map((prec, pidx) => (
                                     <li key={pidx} className="list-disc list-inside">✓ {prec}</li>
@@ -154,7 +157,7 @@ export default function ChatDisplay({ messages, loading, error, onShowMore }: Ch
                             
                             {cond.emergencyWarnings && cond.emergencyWarnings.length > 0 && (
                               <div className="bg-[#FFE5EA] p-2 rounded border-l-4 border-[#E30D34]">
-                                <p className="font-bold text-[#E30D34]">⚠️ Emergency Warning Signs:</p>
+                                <p className="font-bold text-[#E30D34]">⚠️ {t('chat.emergencyWarnings', lang)}</p>
                                 <ul className="text-[#9F1239] ml-2 space-y-1 mt-1">
                                   {cond.emergencyWarnings.map((warn, widx) => (
                                     <li key={widx} className="list-disc list-inside text-xs">• {warn}</li>
@@ -166,7 +169,7 @@ export default function ChatDisplay({ messages, loading, error, onShowMore }: Ch
                         ))}
                         
                         <div className="bg-[#A6CBFF] p-3 rounded-lg text-[#072A6F] font-semibold text-center mt-4">
-                          ⚕️ If symptoms worsen or emergency warnings appear, consult a healthcare professional immediately.
+                          ⚕️ {t('chat.ifWorse', lang)}
                         </div>
                       </div>
                     )}

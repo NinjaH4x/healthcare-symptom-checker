@@ -115,6 +115,45 @@ const dictionaries: Record<string, Record<string, string>> = {
   }
 };
 
+// Add chat-specific keys for translation-aware UI elements
+const chatKeys: Record<string, Record<string, string>> = {
+  en: {
+    'chat.showMore': 'Show more conditions',
+    'chat.allPossibleConditions': 'All Possible Conditions:',
+    'chat.howItEnters': 'How It Enters Your Body:',
+    'chat.recoveryTime': 'Recovery Time:',
+    'chat.precautions': 'Precautions to Prevent Further Infection:',
+    'chat.emergencyWarnings': 'Emergency Warning Signs:',
+    'chat.ifWorse': 'If symptoms worsen or emergency warnings appear, consult a healthcare professional immediately.',
+    'chat.error': 'Error'
+  },
+  hi: {
+    'chat.showMore': 'अधिक स्थितियाँ दिखाएँ',
+    'chat.allPossibleConditions': 'सभी संभावित स्थिति:',
+    'chat.howItEnters': 'यह आपके शरीर में कैसे प्रवेश करता है:',
+    'chat.recoveryTime': 'ठीक होने का समय:',
+    'chat.precautions': 'अतिरिक्त संक्रमण को रोकने के उपाय:',
+    'chat.emergencyWarnings': 'आपातकालीन चेतावनी संकेत:',
+    'chat.ifWorse': 'यदि लक्षण बिगड़ते हैं या आपातकालीन चेतावनियाँ दिखाई देती हैं, तो तुरंत किसी स्वास्थ्य पेशेवर से सलाह लें।',
+    'chat.error': 'त्रुटि'
+  },
+  mr: {
+    'chat.showMore': 'अधिक स्थिती दाखवा',
+    'chat.allPossibleConditions': 'सर्व संभाव्य स्थिती:',
+    'chat.howItEnters': 'हे तुमच्या शरीरात कसे प्रवेश करते:',
+    'chat.recoveryTime': 'रिकव्हरी वेळ:',
+    'chat.precautions': 'आवधिक संसर्ग टाळण्यासाठी खबरदारी:',
+    'chat.emergencyWarnings': 'तातडीचे चेतावणी संकेत:',
+    'chat.ifWorse': 'जर लक्षणे वाईट होतात किंवा तातडीच्या चेतावणी दिसतात, तर तात्काळ आरोग्य तज्ञांचा सल्ला घ्या.',
+    'chat.error': 'त्रुटी'
+  }
+};
+
+// Merge chatKeys into dictionaries so t() can find them
+for (const langKey of Object.keys(chatKeys)) {
+  dictionaries[langKey] = { ...(dictionaries[langKey] || {}), ...(chatKeys as any)[langKey] };
+}
+
 export function t(key: string, lang: string = 'en'): string {
   const l = lang && typeof lang === 'string' ? lang.split('-')[0] : 'en';
   const dict = dictionaries[l] || dictionaries['en'];
