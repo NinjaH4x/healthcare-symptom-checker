@@ -1,10 +1,4 @@
-/**
- * next.config.js
- * Default Next.js config for Vercel (with API routes support).
- * GitHub Pages deployment uses a separate static-export workflow.
- */
+/** @type {import('next').NextConfig} */
+const nextConfig = {};
 
-module.exports = {
-  // No 'output: export' — this enables API routes on Vercel
-  trailingSlash: true,
-};
+module.exports = nextConfig;
